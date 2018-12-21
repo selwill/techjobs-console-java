@@ -7,13 +7,12 @@ import org.apache.commons.csv.CSVRecord;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by LaunchCode
  */
+
 public class JobData {
 
     private static final String DATA_FILE = "resources/job_data.csv";
@@ -30,7 +29,7 @@ public class JobData {
      */
     public static ArrayList<String> findAll(String field) {
 
-        // load data, if not already loaded
+// load data, if not already loaded
         loadData();
 
         ArrayList<String> values = new ArrayList<>();
@@ -43,15 +42,21 @@ public class JobData {
             }
         }
 
+// TODO: BONUS 1 COMPLETED -> Sorting list results
+        Collections.sort(values);
+
         return values;
     }
 
     public static ArrayList<HashMap<String, String>> findAll() {
 
-        // load data, if not already loaded
+// load data, if not already loaded
         loadData();
 
-        return allJobs;
+// TODO: Bonus 2 COMPLETED -> Return a copy of allJobs
+        ArrayList allJobsCopy = new ArrayList(allJobs);
+
+        return allJobsCopy;
     }
 
     /**
@@ -61,13 +66,13 @@ public class JobData {
      * For example, searching for employer "Enterprise" will include results
      * with "Enterprise Holdings, Inc".
      *
-     * @param column   Column that should be searched.
-     * @param value Value of teh field to search for
+     * @param column Column that should be searched.
+     * @param value Value of the field to search for
      * @return List of all jobs matching the criteria
      */
     public static ArrayList<HashMap<String, String>> findByColumnAndValue(String column, String value) {
 
-        // load data, if not already loaded
+// load data, if not already loaded
         loadData();
 
         ArrayList<HashMap<String, String>> jobs = new ArrayList<>();
@@ -76,8 +81,32 @@ public class JobData {
 
             String aValue = row.get(column);
 
-            if (aValue.contains(value)) {
+// TODO: COMPLETED -> Make search methods case-insensitive
+            if (aValue.toLowerCase().contains(value.toLowerCase())) {
                 jobs.add(row);
+            }
+        }
+
+        return jobs;
+    }
+
+    // TODO: COMPLETED (1 of 2) -> Created method findByValue
+    public static ArrayList<HashMap<String, String>> findByValue(String searchChoice) {
+// load data, if not already loaded
+        loadData();
+
+        ArrayList<HashMap<String, String>> jobs = new ArrayList<>();
+        ArrayList<HashMap<String, String>> term = new ArrayList<>();
+
+        for (int i = 0; i < allJobs.size(); i++) {
+            for (Map.Entry<String, String> job : allJobs.get(i).entrySet()) {
+                term.addAll(findByColumnAndValue(job.getKey(), searchChoice));
+            }
+
+            if (!term.isEmpty()) {
+                if (!jobs.containsAll(term)) {
+                    jobs.addAll(term);
+                }
             }
         }
 
@@ -89,14 +118,14 @@ public class JobData {
      */
     private static void loadData() {
 
-        // Only load data once
+// Only load data once
         if (isDataLoaded) {
             return;
         }
 
         try {
 
-            // Open the CSV file and set up pull out column header info and records
+// Open the CSV file and set up pull out column header info and records
             Reader in = new FileReader(DATA_FILE);
             CSVParser parser = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(in);
             List<CSVRecord> records = parser.getRecords();
@@ -105,7 +134,7 @@ public class JobData {
 
             allJobs = new ArrayList<>();
 
-            // Put the records into a more friendly format
+// Put the records into a more friendly format
             for (CSVRecord record : records) {
                 HashMap<String, String> newJob = new HashMap<>();
 
@@ -116,7 +145,7 @@ public class JobData {
                 allJobs.add(newJob);
             }
 
-            // flag the data as loaded, so we don't do it twice
+// flag the data as loaded, so we don't do it twice
             isDataLoaded = true;
 
         } catch (IOException e) {
@@ -124,5 +153,5 @@ public class JobData {
             e.printStackTrace();
         }
     }
-
 }
+
